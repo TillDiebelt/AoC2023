@@ -58,10 +58,10 @@ namespace Solutions
             Console.WriteLine("\nTests:");
             var test1 = solver.SolvePart1(lines);
             Console.WriteLine(test1);
-            if (test1 == -1) Console.WriteLine("test 1 successful"); else Console.WriteLine("test 1 failed");
+            if (test1 == 142) Console.WriteLine("test 1 successful"); else Console.WriteLine("test 1 failed");
             var test2 = solver.SolvePart2(lines);
             Console.WriteLine(test2);
-            if (test2 == -1) Console.WriteLine("test 2 successful"); else Console.WriteLine("test 2 failed");
+            if (test2 == 281) Console.WriteLine("test 2 successful"); else Console.WriteLine("test 2 failed");
 
             //Benchmark
             //Console.WriteLine("\nBenchmark:");

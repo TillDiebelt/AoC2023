@@ -29,6 +29,7 @@ using TillSharp.Base;
 using System.Text.RegularExpressions;
 using Microsoft.Diagnostics.Runtime.DacInterface;
 using AOCLib;
+using System.Runtime.InteropServices;
 
 namespace Solutions.Day01
 {
@@ -36,67 +37,102 @@ namespace Solutions.Day01
     {
         public long SolvePart1(string[] lines)
         {
-            //Parse
-            // 0,3 -> 1,4
-            // 2,1 -> 4,3
-            //var rocklines = lines.Select(x => x.Split("->").ToList().Select(y => (Int32.Parse(y.Trim().Split(',')[0]), Int32.Parse(y.Trim().Split(',')[1]))).ToList());
-
-            //1,3,5,1,2,455,6
-            //var longs = lines[0].Split(',', StringSplitOptions.RemoveEmptyEntries).Select(x => Convert.ToInt64(x));
-
-            //1
-            //3
-            //var sum = lines.Select(y => Convert.ToInt64(y)).Map(x => x).Reduce((x, y) => x + y);
-
-
-            var longs = lines.Select(y => Convert.ToInt64(y)).ToList();
-            
-            for(int i = 0; i < longs.Count-1; i++)
-            {
-                for (int j = i; j < longs.Count; j++)
-                {
-                    if (longs[i] + longs[j] == 2020)
-                        return longs[i] * longs[j];
-                }
-            }
-
             //Solve
             long result = 0;
+            for (int i = 0; i < lines.Length; i++)
+            {
+                int num1 = 0;
+                int num2 = 0;
+                for (int j = 0; j < lines[i].Length; j++)
+                {
+                    if (char.IsDigit(lines[i][j]))
+                    {
+                        num1 = lines[i][j].ToDigit();
+                        break;
+                    }
+                }
+                for (int j = lines[i].Length-1; j >= 0; j--)
+                {
+                    if (char.IsDigit(lines[i][j]))
+                    {
+                        num2 = lines[i][j].ToDigit();
+                        break;
+                    }
+                }
+                result += Convert.ToInt64(num1 + "" + num2);
+            }
             return result;
         }
 
         public long SolvePart2(string[] lines)
         {
-            //Parse
-            // 0,3 -> 1,4
-            // 2,1 -> 4,3
-            //var rocklines = lines.Select(x => x.Split("->").ToList().Select(y => (Int32.Parse(y.Trim().Split(',')[0]), Int32.Parse(y.Trim().Split(',')[1]))).ToList());
-
-            //1,3,5,1,2,455,6
-            //var longs = lines[0].Split(',', StringSplitOptions.RemoveEmptyEntries).Select(x => Convert.ToInt64(x));
-
-            //1
-            //3
-            //var sum = lines.Select(y => Convert.ToInt64(y)).Map(x => x).Reduce((x, y) => x + y);
-
-
-            var longs = lines.Select(y => Convert.ToInt64(y)).ToList();
-
-            for (int i = 0; i < longs.Count - 2; i++)
+            //Solve
+            long result = 0;
+            for (int i = 0; i < lines.Length; i++)
             {
-                for (int j = i; j < longs.Count-1; j++)
+                for (int j = 0; j < lines[i].Length; j++)
                 {
-                    for (int h = i; h < longs.Count; h++)
+                    if (lines[i].Substring(j).StartsWith("one"))
                     {
-                        if (longs[i] + longs[j] + longs[h] == 2020)
-                            return longs[i] * longs[j] * longs[h];
+                        lines[i] = lines[i].Substring(0, j) + "1" + lines[i].Substring(j+2);
+                    }
+                    if (lines[i].Substring(j).StartsWith("two"))
+                    {
+                        lines[i] = lines[i].Substring(0, j) + "2" + lines[i].Substring(j + 2);
+                    }
+                    if (lines[i].Substring(j).StartsWith("three"))
+                    {
+                        lines[i] = lines[i].Substring(0, j) + "3" + lines[i].Substring(j + 4);
+                    }
+                    if (lines[i].Substring(j).StartsWith("four"))
+                    {
+                        lines[i] = lines[i].Substring(0, j) + "4" + lines[i].Substring(j + 3);
+                    }
+                    if (lines[i].Substring(j).StartsWith("five"))
+                    {
+                        lines[i] = lines[i].Substring(0, j) + "5" + lines[i].Substring(j + 3);
+                    }
+                    if (lines[i].Substring(j).StartsWith("six"))
+                    {
+                        lines[i] = lines[i].Substring(0, j) + "6" + lines[i].Substring(j + 2);
+                    }
+                    if (lines[i].Substring(j).StartsWith("seven"))
+                    {
+                        lines[i] = lines[i].Substring(0, j) + "7" + lines[i].Substring(j + 4);
+                    }
+                    if (lines[i].Substring(j).StartsWith("eight"))
+                    {
+                        lines[i] = lines[i].Substring(0, j) + "8" + lines[i].Substring(j + 4);
+                    }
+                    if (lines[i].Substring(j).StartsWith("nine"))
+                    {
+                        lines[i] = lines[i].Substring(0, j) + "9" + lines[i].Substring(j + 3);
+                    }
+                    if (lines[i].Substring(j).StartsWith("zero"))
+                    {
+                        lines[i] = lines[i].Substring(0, j) + "0" + lines[i].Substring(j + 3);
                     }
                 }
+                int num1 = 0;
+                int num2 = 0;
+                for (int j = 0; j < lines[i].Length; j++)
+                {
+                    if (char.IsDigit(lines[i][j]))
+                    {
+                        num1 = lines[i][j].ToDigit();                        
+                        break;
+                    }          
+                }
+                for (int j = lines[i].Length - 1; j >= 0; j--)
+                {
+                    if (char.IsDigit(lines[i][j]))
+                    {
+                        num2 = lines[i][j].ToDigit();
+                        break;
+                    }
+                }
+                result += Convert.ToInt64(num1 + "" + num2);
             }
-
-
-            //Solve
-            long result = Utils.GaussSum(10, 5);
             return result;
         }
     }
