@@ -5,6 +5,7 @@ using BenchmarkDotNet.Running;
 using Solutions;
 using Solutions.Day00;
 using Solutions.Day01;
+using Solutions.Day02;
 
 namespace Solutions
 {
@@ -35,8 +36,8 @@ namespace Solutions
     
     class Program
     {
-        public static int day = 1;
-        public static ISolver solver = new SolverDay01();
+        public static int day = 2;
+        public static ISolver solver = new SolverDay02();
         public static string inputPath = "../../../input/inputDay"+day;
         public static string inputPathTest = "../../../input/inputTest";
         
@@ -58,10 +59,10 @@ namespace Solutions
             Console.WriteLine("\nTests:");
             var test1 = solver.SolvePart1(lines);
             Console.WriteLine(test1);
-            if (test1 == 142) Console.WriteLine("test 1 successful"); else Console.WriteLine("test 1 failed");
+            if (test1 == 8) Console.WriteLine("test 1 successful"); else Console.WriteLine("test 1 failed");
             var test2 = solver.SolvePart2(lines);
             Console.WriteLine(test2);
-            if (test2 == 281) Console.WriteLine("test 2 successful"); else Console.WriteLine("test 2 failed");
+            if (test2 == 2286) Console.WriteLine("test 2 successful"); else Console.WriteLine("test 2 failed");
 
             //Benchmark
             //Console.WriteLine("\nBenchmark:");
