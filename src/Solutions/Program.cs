@@ -6,6 +6,7 @@ using Solutions;
 using Solutions.Day00;
 using Solutions.Day01;
 using Solutions.Day02;
+using Solutions.Day03;
 
 namespace Solutions
 {
@@ -36,8 +37,8 @@ namespace Solutions
     
     class Program
     {
-        public static int day = 2;
-        public static ISolver solver = new SolverDay02();
+        public static int day = 3;
+        public static ISolver solver = new SolverDay03();
         public static string inputPath = "../../../input/inputDay"+day;
         public static string inputPathTest = "../../../input/inputTest";
         

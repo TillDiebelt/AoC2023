@@ -65,7 +65,6 @@ namespace Solutions.Day02
             }
 
             //Solve
-            //2954
             return result; 
         }
 
@@ -75,9 +74,9 @@ namespace Solutions.Day02
             for (int i = 0; i < lines.Length; i++)
             {
                 var split = lines[i].Split(':')[1].Split(';');
-                int red = 1;
-                int blue = 1;
-                int green = 1;
+                int red = 0;
+                int blue = 0;
+                int green = 0;
                 foreach (var s in split)
                 {
                     var items = s.Split(',');
