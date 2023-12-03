@@ -30,6 +30,8 @@ using System.Text.RegularExpressions;
 using Microsoft.Diagnostics.Runtime.DacInterface;
 using AOCLib;
 using System.Runtime.InteropServices;
+using System.Threading.Channels;
+using System.Linq.Expressions;
 
 namespace Solutions.Day01
 {
@@ -133,6 +135,7 @@ namespace Solutions.Day01
                 }
                 result += Convert.ToInt64(num1 + "" + num2);
             }
+
             return result;
         }
     }

@@ -36,41 +36,119 @@ namespace Solutions.Day03
     {
         public long SolvePart1(string[] lines)
         {
-            //Parse
-            // 0,3 -> 1,4
-            // 2,1 -> 4,3
-            //var rocklines = lines.Select(x => x.Split("->").ToList().Select(y => (Int32.Parse(y.Trim().Split(',')[0]), Int32.Parse(y.Trim().Split(',')[1]))).ToList());
+            var needParse = new bool[lines.Length, lines[0].Length];
+            for(int i = 0; i < lines.Length; i++)
+            {
+                for (int j = 0; j < lines[0].Length; j++)
+                {
+                    if ((lines[i][j] == '*'))
+                    {
+                        var neigh = needParse.NeighboursDiag(i,j);
+                        int count = 0;
+                        foreach (var p in neigh)
+                        {
+                            if(char.IsDigit(lines[p.x][p.y])) count++;
+                            needParse[p.x, p.y] = true;
+                        }
+                    }
+                }
+            }
 
-            //1,3,5,1,2,455,6
-            //var longs = lines[0].Split(',', StringSplitOptions.RemoveEmptyEntries).Select(x => Convert.ToInt64(x));
-
-            //1
-            //3
-            //var sum = lines.Select(y => Convert.ToInt64(y)).Map(x => x).Reduce((x, y) => x + y);
-
+            long result = 0;
+            for (int i = 0; i < lines.Length; i++)
+            {
+                for (int j = 0; j < lines[0].Length; j++)
+                {
+                    if (needParse[i,j] && char.IsDigit(lines[i][j]))
+                    {
+                        while (j > 0 && char.IsDigit(lines[i][j])) j--;
+                        if (!char.IsDigit(lines[i][j])) j++;
+                        string toParse = "";
+                        while (j < lines[0].Length && char.IsDigit(lines[i][j]))
+                        {
+                            toParse += lines[i][j];
+                            j++;
+                        }
+                        result += Convert.ToInt64(toParse);
+                    }
+                }
+            }
 
             //Solve
-            long result = 0;
             return result;
         }
 
         public long SolvePart2(string[] lines)
         {
-            //Parse
-            // 0,3 -> 1,4
-            // 2,1 -> 4,3
-            //var rocklines = lines.Select(x => x.Split("->").ToList().Select(y => (Int32.Parse(y.Trim().Split(',')[0]), Int32.Parse(y.Trim().Split(',')[1]))).ToList());
-
-            //1,3,5,1,2,455,6
-            //var longs = lines[0].Split(',', StringSplitOptions.RemoveEmptyEntries).Select(x => Convert.ToInt64(x));
-
-            //1
-            //3
-            //var sum = lines.Select(y => Convert.ToInt64(y)).Map(x => x).Reduce((x, y) => x + y);
-
-
             //Solve
-            long result = Utils.GaussSum(10, 5);
+            int uni = 1;
+            var needParse = new int[lines.Length, lines[0].Length];
+            for (int i = 0; i < lines.Length; i++)
+            {
+                for (int j = 0; j < lines[0].Length; j++)
+                {
+                    if ((lines[i][j] == '*'))
+                    {
+                        var neigh = needParse.NeighboursDiag(i, j);
+                        int count = 0;
+                        bool t = false;
+                        int a = 0;
+                        for(int y = -1; y < 2; y++)
+                        {
+                            for (int x = -1; x < 2; x++)
+                            {
+                                if((i + y >= 0 && i + y < lines.Length && j + x >= 0 && j + x < lines[0].Length) && char.IsDigit(lines[i+y][j+x]))
+                                {
+                                    count++;
+                                    while ((i + y >= 0 && i + y < lines.Length && j + x >= 0 && j + x < lines[0].Length) && char.IsDigit(lines[i + y][j + x])) x++;
+                                }
+                            }
+                        }
+                        if (count == 2)
+                        {
+                            foreach (var p in neigh)
+                            {
+                                needParse[p.x, p.y] = uni;
+                            }
+                            uni++;
+                        }
+                    }
+                }
+            }
+
+            long result = 0;
+            Dictionary<int, long> values = new Dictionary<int, long>();
+            for (int i = 0; i < lines.Length; i++)
+            {
+                for (int j = 0; j < lines[0].Length; j++)
+                {
+                    if ((needParse[i, j] > 0) && char.IsDigit(lines[i][j]))
+                    {
+                        var k = j;
+                        while (j > 0 && char.IsDigit(lines[i][j])) j--;
+                        if (!char.IsDigit(lines[i][j])) j++;
+                        string toParse = "";
+                        while (j < lines[0].Length && char.IsDigit(lines[i][j]))
+                        {
+                            toParse += lines[i][j];
+                            j++;
+                        }
+                        if (values.ContainsKey(needParse[i, k]))
+                        {
+                            values[needParse[i, k]] *= Convert.ToInt64(toParse);
+                        }
+                        else
+                        {
+                            values.Add(needParse[i, k], Convert.ToInt64(toParse));
+                        }
+                    }
+                }
+            }
+
+            foreach (var k in values)
+            {
+                result += k.Value;
+            }
             return result;
         }
     }
