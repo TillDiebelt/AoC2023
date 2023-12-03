@@ -41,7 +41,7 @@ namespace Solutions.Day03
             {
                 for (int j = 0; j < lines[0].Length; j++)
                 {
-                    if ((lines[i][j] == '*'))
+                    if (!char.IsDigit(lines[i][j]) && (lines[i][j] != '.'))
                     {
                         var neigh = needParse.NeighboursDiag(i,j);
                         int count = 0;
