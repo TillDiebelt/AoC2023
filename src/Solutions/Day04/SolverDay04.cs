@@ -36,41 +36,71 @@ namespace Solutions.Day04
     {
         public long SolvePart1(string[] lines)
         {
-            //Parse
-            // 0,3 -> 1,4
-            // 2,1 -> 4,3
-            //var rocklines = lines.Select(x => x.Split("->").ToList().Select(y => (Int32.Parse(y.Trim().Split(',')[0]), Int32.Parse(y.Trim().Split(',')[1]))).ToList());
-
-            //1,3,5,1,2,455,6
-            //var longs = lines[0].Split(',', StringSplitOptions.RemoveEmptyEntries).Select(x => Convert.ToInt64(x));
-
-            //1
-            //3
-            //var sum = lines.Select(y => Convert.ToInt64(y)).Map(x => x).Reduce((x, y) => x + y);
-
-
-            //Solve
             long result = 0;
+            for (int i = 0; i < lines.Length; i++)
+            {
+                var splits = lines[i].Split(":")[1];
+                var winning = splits.Split("|")[0].Trim().Split(" ",StringSplitOptions.RemoveEmptyEntries).Select(x => Convert.ToInt64(x)).ToList();
+                var me = splits.Split("|")[1].Trim().Split(" ", StringSplitOptions.RemoveEmptyEntries).Select(x => Convert.ToInt64(x)).ToList();
+                var foo = winning.Intersect(me);
+                if(foo.Count()>0)
+                    result += (long)Math.Pow(2, foo.Count()-1);
+            }
+            
+            //Solve
             return result;
         }
 
         public long SolvePart2(string[] lines)
         {
-            //Parse
-            // 0,3 -> 1,4
-            // 2,1 -> 4,3
-            //var rocklines = lines.Select(x => x.Split("->").ToList().Select(y => (Int32.Parse(y.Trim().Split(',')[0]), Int32.Parse(y.Trim().Split(',')[1]))).ToList());
-
-            //1,3,5,1,2,455,6
-            //var longs = lines[0].Split(',', StringSplitOptions.RemoveEmptyEntries).Select(x => Convert.ToInt64(x));
-
-            //1
-            //3
-            //var sum = lines.Select(y => Convert.ToInt64(y)).Map(x => x).Reduce((x, y) => x + y);
-
+            long result = 0;
+            Dictionary<int, int> count = new Dictionary<int, int>();
+            for (int i = 0; i < lines.Length; i++)
+            {
+                var splits = lines[i].Split(":")[1];
+                var winning = splits.Split("|")[0].Trim().Split(" ", StringSplitOptions.RemoveEmptyEntries).Select(x => Convert.ToInt64(x)).ToList();
+                var me = splits.Split("|")[1].Trim().Split(" ", StringSplitOptions.RemoveEmptyEntries).Select(x => Convert.ToInt64(x)).ToList();
+                var foo = winning.Intersect(me);
+                result++;
+                if (foo.Count() > 0 || count.ContainsKey(i))
+                {
+                    if (count.ContainsKey(i))
+                    {
+                        result--;
+                        for (int t = 0; t <= count[i]; t++)
+                        {
+                            result++;
+                            for (int j = 1; j <= foo.Count(); j++)
+                            {
+                                if (count.ContainsKey(i + j))
+                                {
+                                    count[i + j]++;
+                                }
+                                else
+                                {
+                                    count.Add(i + j, 1);
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        for (int j = 1; j <= foo.Count(); j++)
+                        {
+                            if (count.ContainsKey(i + j))
+                            {
+                                count[i + j]++;
+                            }
+                            else
+                            {
+                                count.Add(i + j, 1);
+                            }
+                        }
+                    }
+                }
+            }
 
             //Solve
-            long result = Utils.GaussSum(10, 5);
             return result;
         }
     }
