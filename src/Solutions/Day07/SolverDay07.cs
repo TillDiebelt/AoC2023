@@ -15,6 +15,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Reflection.Emit;
 using System.Text.Json;
 using AOCLib;
+using System.Xml;
 
 namespace Solutions.Day07
 {
@@ -47,66 +48,28 @@ namespace Solutions.Day07
             public string hand;
             public long value;
             public int type;
-            public List<int> handvalues;
+            public List<int> deciders;
             public Hand(string hand, long value)
             {
                 this.hand = hand;
                 this.value = value;
-                this.handvalues = new List<int>();
+                this.deciders = new List<int>();
 
-                Dictionary<char, int> chars = new Dictionary<char, int>();
+                //just for the fun of it here a messed up parsing. look at JHand to see how it was originally done
+                Dictionary<char, int> uniques = new Dictionary<char, int>();
                 for (int i = 0; i < hand.Length; i++)
                 {
-                    //K, Q, J, T,
-                    if (hand[i] == 'A')
-                        handvalues.Add(99);
-                    else if (hand[i] == 'K')
-                        handvalues.Add(98);
-                    else if (hand[i] == 'Q')
-                        handvalues.Add(97);
-                    else if (hand[i] == 'J')
-                        handvalues.Add(96);
-                    else if (hand[i] == 'T')
-                        handvalues.Add(95);
+                    //magic conversion
+                    if (!char.IsDigit(hand[i]))
+                        if (((int)hand[i]) % 2 == 0) deciders.Add(100 - ((int)hand[i]));
+                        else deciders.Add(200-((int)hand[i]));
                     else
-                        handvalues.Add(hand[i].ToDigit());
+                        deciders.Add(hand[i].ToDigit());
 
+                    if (!uniques.TryAdd(hand[i], 1)) uniques[hand[i]]++;
+                }
 
-                    if (chars.ContainsKey(hand[i]))
-                    {
-                        chars[hand[i]]++;
-                    }
-                    else
-                        chars.Add(hand[i], 1);
-                }
-                if (chars.Any(x => x.Value == 5))
-                {
-                    type = 9;
-                }
-                else if (chars.Any(x => x.Value == 4))
-                {
-                    type = 8;
-                }
-                else if (chars.Any(x => x.Value == 3) && chars.Any(x => x.Value == 2))
-                {
-                    type = 7;
-                }
-                else if (chars.Any(x => x.Value == 3))
-                {
-                    type = 6;
-                }
-                else if (chars.Where(x => x.Value == 2).Count() == 2)
-                {
-                    type = 5;
-                }
-                else if (chars.Any(x => x.Value == 2))
-                {
-                    type = 4;
-                }
-                else
-                {
-                    type = 3;
-                }
+                type = (2 * (5 - uniques.Count())) - uniques.Where(x => x.Value == 2).Count(); //magic math
             }
 
             public int CompareTo(Hand? other)
@@ -115,8 +78,8 @@ namespace Solutions.Day07
                 if (other.type > this.type) return 1;
                 for (int i = 0; i < this.hand.Length; i++)
                 {
-                    if (this.handvalues[i] > other.handvalues[i]) return -1;
-                    if (other.handvalues[i] > this.handvalues[i]) return 1;
+                    if (this.deciders[i] > other.deciders[i]) return -1;
+                    if (other.deciders[i] > this.deciders[i]) return 1;
                 }
                 return 0;
             }
@@ -157,10 +120,9 @@ namespace Solutions.Day07
                 this.handvalues = new List<int>();
                 js = 0;
 
-                Dictionary<char, int> chars = new Dictionary<char, int>();
+                Dictionary<char, int> uniques = new Dictionary<char, int>();
                 for (int i = 0; i < hand.Length; i++)
                 {
-                    //K, Q, J, T,
                     if (hand[i] == 'A')
                         handvalues.Add(99);
                     else if (hand[i] == 'K')
@@ -177,36 +139,30 @@ namespace Solutions.Day07
                     else
                         handvalues.Add(hand[i].ToDigit());
 
-
-                    if (chars.ContainsKey(hand[i]))
-                    {
-                        chars[hand[i]]++;
-                    }
-                    else
-                        chars.Add(hand[i], 1);
+                    if (!uniques.TryAdd(hand[i], 1)) uniques[hand[i]]++;
                 }
-                if (chars.Any(x => x.Value + (x.Key == 'J' ? 0 : js) == 5))
+                if (uniques.Any(x => x.Value + (x.Key == 'J' ? 0 : js) == 5))
                 {
                     type = 9;
                 }
-                else if (chars.Any(x => x.Value + (x.Key == 'J' ? 0 : js) == 4))
+                else if (uniques.Any(x => x.Value + (x.Key == 'J' ? 0 : js) == 4))
                 {
                     type = 8;
                 }
-                else if ((chars.Any(x => x.Value == 3) && chars.Any(x => x.Value == 2))
-                         || (chars.Where(x => x.Value == 2).Count() == 2 && js == 1))
+                else if ((uniques.Any(x => x.Value == 3) && uniques.Any(x => x.Value == 2))
+                         || (uniques.Where(x => x.Value == 2).Count() == 2 && js == 1))
                 {
                     type = 7;
                 }
-                else if (chars.Any(x => x.Value + (x.Key == 'J' ? 0 : js) == 3))
+                else if (uniques.Any(x => x.Value + (x.Key == 'J' ? 0 : js) == 3))
                 {
                     type = 6;
                 }
-                else if (chars.Where(x => x.Value == 2).Count() == 2 || (chars.Any(x => x.Value == 2) && js == 1))
+                else if (uniques.Where(x => x.Value == 2).Count() == 2 || (uniques.Any(x => x.Value == 2) && js == 1))
                 {
                     type = 5;
                 }
-                else if (chars.Any(x => x.Value + (x.Key == 'J' ? 0 : js) == 2))
+                else if (uniques.Any(x => x.Value + (x.Key == 'J' ? 0 : js) == 2))
                 {
                     type = 4;
                 }
