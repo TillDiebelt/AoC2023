@@ -23,26 +23,26 @@ namespace Solutions.Day07
     {
         public long SolvePart1(string[] lines)
         {
-            long result = 0;
-            List<Hand> hands = new List<Hand>();
+            long result = lines
+                .Select(l => (
+                    Int64.Parse(l.Split(" ").Last()), 
+                    l.Split(" ").First().GroupBy(x => x).ToDictionary(z => z.Key, y => y.Count()),
+                    l.Split(" ").First()))
+                .Select(x => (
+                    x.Item1, 
+                    2*(5-x.Item2.Count())- x.Item2.Where(x => x.Value == 2).Count(), 
+                    x.Item3.Select((t, index) => (char.IsDigit(t) ? t.ToDigit() : (((int)t) % 2 == 0 ? (100 - ((int)t)) : (200 - ((int)t)))) * (Math.Pow(1000, 5 - index))).Sum()))
+                .Select(x => (
+                    x.Item1,
+                    x.Item2 * Math.Pow(1000, 6) + x.Item3))
+                .OrderBy(x => x.Item2)
+                .Select((n, index) => n.Item1*(index+1))
+                .Sum();
 
-            for (int i = 0; i < lines.Length; i++)
-            {
-                hands.Add(new Hand(lines[i].Split(" ").First(), Int64.Parse(lines[i].Split(" ").Last())));
-            }
-
-            hands.Sort();
-            hands.Reverse();
-
-            for (int i = 0; i < hands.Count; i++)
-            {
-                result += hands[i].value * (i + 1);
-            }
-
-            //Solve
             return result;
         }
         
+        //for part 1
         private class Hand : IComparable<Hand>
         {
             public string hand;
