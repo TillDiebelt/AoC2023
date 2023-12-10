@@ -29,6 +29,9 @@ using TillSharp.Base;
 using System.Text.RegularExpressions;
 using Microsoft.Diagnostics.Runtime.DacInterface;
 using AOCLib;
+using System.Runtime.Intrinsics.X86;
+using BenchmarkDotNet.Disassemblers;
+using System.Drawing;
 
 namespace Solutions.Day10
 {
@@ -52,22 +55,6 @@ namespace Solutions.Day10
 
         public long SolvePart1(string[] lines)
         {
-            //Parse
-            // 0,3 -> 1,4
-            // 2,1 -> 4,3
-            //var rocklines = lines.Select(x => x.Split("->").ToList().Select(y => (Int32.Parse(y.Trim().Split(',')[0]), Int32.Parse(y.Trim().Split(',')[1]))).ToList());
-
-            //1,3,5,1,2,455,6
-            //var longs = lines[0].Split(',', StringSplitOptions.RemoveEmptyEntries).Select(x => Convert.ToInt64(x));
-
-            //1
-            //3
-            //var sum = lines.Select(y => Convert.ToInt64(y)).Map(x => x).Reduce((x, y) => x + y);
-
-
-            long result = 0;
-            List<long> longs = new();
-            Dictionary<string, long> dic = new();
             (int,int)[,] pipes = new (int, int)[lines.Length, lines[0].Length];
             (int, int) start = (0,0);
             
@@ -107,126 +94,53 @@ namespace Solutions.Day10
                 }
             }
 
-            //start = (110, 107);
-            //pipes[110, 107] = VERT;
-            Func<(int,int)[,], (int, int), IEnumerable<(int, int)>> Neighbours =
-            (map, current) => 
+            //see.Add(start);
+            bool running = true;
+            var ini = WalkStep(pipes, start, 0, start);
+            (int, int) prev = start;
+            while (running)
             {
-                (int, int) currentP = map[current.Item1, current.Item2];
-                int x = current.Item1;
-                int y = current.Item2;
-                List<(int x, int y)> neighbours = new List<(int x, int y)>();
-                List<(int x, int y)> result = new List<(int x, int y)>();
-                if (x - 1 >= 0)
-                {
-                    if(IsValidNeighbor(map, current, (x-1,y)))
-                        neighbours.Add((x - 1, y));
-                }
-                if (x + 1 <= map.GetUpperBound(1))
-                {
-                    if (IsValidNeighbor(map, current, (x + 1, y)))
-                        neighbours.Add((x + 1, y));
-                }
-                if (y - 1 >= 0)
-                    if (IsValidNeighbor(map, current, (x, y -1))) 
-                        neighbours.Add((x, y - 1));
-                if (y + 1 <= map.GetUpperBound(0))
-                    if (IsValidNeighbor(map, current, (x, y + 1))) 
-                        neighbours.Add((x, y + 1));
-                
-                foreach(var n in neighbours)
-                {
-                    if (map[n.x, n.y] != NONE) result.Add(n);
-                }
-                return result;
-            };            
+                var step = WalkStep(pipes, ini.next, ini.i, prev);
+                if (ini.next == start)
+                    break;
+                prev = ini.next;
+                ini.next = step.next;
+                ini.i = step.i;
+            }
+            long result = ini.i;
             
-            see.Add(start);
-            result = WalkStep(pipes, start, 0, start, start);
-
-            return (result + 1) / 2; // (seen.Max(x => x.Item2)+6)/2; //6813,6814,6815
-        }
-
-        public static int foo = 0;
-        public static List<(int, int)> see = new List<(int, int)>();
-        
-        private long WalkStep((int,int)[,] m, (int, int) cur, int i)
-        {
-            long res = 0;
-            foreach (var n in Neighbours(m, cur, (-1,-1)))
-            {
-                if (!see.Contains(n))
-                {
-                    foo++;
-                    see.Add(n);
-                    res = Math.Max(res, WalkStep(m, n, i + 1));
-                }
-            }
-
-            return res + 1;
-        }
-
-        private long WalkStep((int, int)[,] m, (int, int) cur, int i, (int, int) prev, (int, int) start)
-        {
-            long res = 0;
-            var neigh = Neighbours(m, cur, prev);
-            if (neigh.Count() == 0) res = i;
-            foreach (var n in neigh)
-            {
-                if (n != prev)
-                {
-                    if (n == start)
-                    {
-                        return i + 1;
-                    }
-                    res = Math.Max(res, WalkStep(m, n, i + 1, cur, start));
-                }
-            }
-
-            return res;
+            return (result) / 2;
         }
         
-        /*
-        private long WalkStep((int, int)[,] m, (int, int) cur, int i, (int, int) prev, (int, int) start)
+                
+        private ((int, int) next, int i) WalkStep((int, int)[,] m, (int, int) cur, int i, (int, int) prev)
         {
-            long res = 0;
-            var neigh = Neighbours(m, cur, (-1, -1));
-            if (neigh.Count() == 0) res = i;
-            foreach (var n in neigh)
-            {
-                if (n != prev)
-                {
-                    if (n == start)
-                    {
-                        return i + 1;
-                    }
-                    res = Math.Max(res, WalkStep(m, n, i + 1, cur, start));
-                }
-            }
+            var neigh = Neighbour(m, cur, prev);
 
-            return res;
-        }*/
-
-        private IEnumerable<(int, int)> Neighbours((int, int)[,] map, (int,int) current, (int, int) prev)
+            return (neigh, i+1);
+        }
+        
+        private (int, int) Neighbour((int, int)[,] map, (int, int) current, (int, int) prev)
         {
             int x = current.Item1;
             int y = current.Item2;
-            if (x - 1 >= 0 && x-1 != prev.Item1)
+            if (x - 1 >= 0 && x - 1 != prev.Item1)
             {
                 if (IsValidNeighbor(map, current, (x - 1, y)))
-                    yield return (x - 1, y);
+                    return (x - 1, y);
             }
             if (x + 1 <= map.GetUpperBound(1) && x + 1 != prev.Item1)
             {
                 if (IsValidNeighbor(map, current, (x + 1, y)))
-                    yield return (x + 1, y);
+                    return (x + 1, y);
             }
             if (y - 1 >= 0 && y - 1 != prev.Item2)
                 if (IsValidNeighbor(map, current, (x, y - 1)))
-                    yield return (x, y - 1);
+                    return (x, y - 1);
             if (y + 1 <= map.GetUpperBound(0) && y + 1 != prev.Item2)
                 if (IsValidNeighbor(map, current, (x, y + 1)))
-                    yield return (x, y + 1);
+                    return (x, y + 1);
+            throw new Exception();
         }
 
         private bool IsValidNeighbor((int, int)[,] map, (int, int) current, (int, int) neighbor)
@@ -238,26 +152,24 @@ namespace Solutions.Day10
             int nx = neighbor.Item1;
             int ny = neighbor.Item2;
             if (neighborP == NONE) return false;
-            if (currentP == START) return true;
-            if (neighborP == START) return true;
             if (nx == x - 1) //left
             {
-                if ((currentP.Item1 == LEFT || currentP.Item2 == LEFT) && (neighborP.Item1 == RIGHT || neighborP.Item2 == RIGHT))
+                if ((currentP.Item1 == LEFT || currentP.Item2 == LEFT || currentP == START) && (neighborP.Item1 == RIGHT || neighborP.Item2 == RIGHT || neighborP == START))
                     return true;
             }
             if (nx == x + 1) //right
             {
-                if ((currentP.Item1 == RIGHT || currentP.Item2 == RIGHT) && (neighborP.Item1 == LEFT || neighborP.Item2 == LEFT))
+                if ((currentP.Item1 == RIGHT || currentP.Item2 == RIGHT || currentP == START) && (neighborP.Item1 == LEFT || neighborP.Item2 == LEFT || neighborP == START))
                     return true;
             }
             if (ny == y - 1) //up
             {
-                if ((currentP.Item1 == UP || currentP.Item2 == UP) && (neighborP.Item1 == DOWN || neighborP.Item2 == DOWN))
+                if ((currentP.Item1 == UP || currentP.Item2 == UP || currentP == START) && (neighborP.Item1 == DOWN || neighborP.Item2 == DOWN || neighborP == START))
                     return true;
             }
             if (ny == y + 1) //down
             {
-                if ((currentP.Item1 == DOWN || currentP.Item2 == 3) && (neighborP.Item1 == UP || neighborP.Item2 == UP))
+                if ((currentP.Item1 == DOWN || currentP.Item2 == 3 || currentP == START) && (neighborP.Item1 == UP || neighborP.Item2 == UP || neighborP == START))
                     return true;
             }
             return false;
@@ -265,21 +177,252 @@ namespace Solutions.Day10
 
         public long SolvePart2(string[] lines)
         {
-            //Parse
-            // 0,3 -> 1,4
-            // 2,1 -> 4,3
-            //var rocklines = lines.Select(x => x.Split("->").ToList().Select(y => (Int32.Parse(y.Trim().Split(',')[0]), Int32.Parse(y.Trim().Split(',')[1]))).ToList());
 
-            //1,3,5,1,2,455,6
-            //var longs = lines[0].Split(',', StringSplitOptions.RemoveEmptyEntries).Select(x => Convert.ToInt64(x));
+            (int, int)[,] pipesP1 = new (int, int)[lines.Length, lines[0].Length];
+            (int, int) start = (0, 0);
 
-            //1
-            //3
-            //var sum = lines.Select(y => Convert.ToInt64(y)).Map(x => x).Reduce((x, y) => x + y);
+            for (int i = 0; i < lines.Count(); i++)
+            {
+                for (int j = 0; j < lines[i].Count(); j++)
+                {
+                    (int, int) p = (i, j);
+                    switch (lines[i][j])
+                    {
+                        case '.':
+                            pipesP1[p.Item1, p.Item2] = NONE;
+                            break;
+                        case '-':
+                            pipesP1[p.Item1, p.Item2] = HOR;
+                            break;
+                        case '|':
+                            pipesP1[p.Item1, p.Item2] = VERT;
+                            break;
+                        case 'L':
+                            pipesP1[p.Item1, p.Item2] = UR;
+                            break;
+                        case 'J':
+                            pipesP1[p.Item1, p.Item2] = UL;
+                            break;
+                        case '7':
+                            pipesP1[p.Item1, p.Item2] = DL;
+                            break;
+                        case 'F':
+                            pipesP1[p.Item1, p.Item2] = DR;
+                            break;
+                        case 'S':
+                            pipesP1[p.Item1, p.Item2] = START;
+                            start = (j, i);
+                            break;
+                    }
+                }
+            }
+
+            bool running = true;
+            var ini = WalkStep(pipesP1, start, 0, start);
+            List<(int, int)> path = new List<(int, int)>();
+            (int, int) prev = start;
+            (int, int) firstPipe = ini.next;
+            (int, int) lastPipe = start;
+            while (running)
+            {
+                path.Add(prev);
+                var step = WalkStep(pipesP1, ini.next, ini.i, prev);
+                if (ini.next == start)
+                {
+                    lastPipe = prev;
+                    break;
+                }
+                prev = ini.next;
+                ini.next = step.next;
+                ini.i = step.i;
+            }
+
+            int startType = 0;
+            int move1X = start.Item1 - firstPipe.Item1;
+            int move1Y = start.Item2 - firstPipe.Item2;
+            
+            int move2X = lastPipe.Item1 - start.Item1;
+            int move2Y = lastPipe.Item2 - start.Item2;
+
+            if (move1X == -1) //right start
+            {
+                if (move2X == -1) //upper end
+                    startType = 2;
+                if (move2Y == -1) //lower end
+                    startType = 6;
+                if (move2Y == 1)
+                    startType = 3;
+            }
+            if (move1X == 1) //left start
+            {
+                if (move2X == 1) //upper end
+                    startType = 2;
+                if (move2Y == -1) //lower end
+                    startType = 4;
+                if (move2Y == 1)
+                    startType = 5;
+            }
+            if (move1Y == -1) //lower start
+            {
+                if (move2Y == -1) //upper end
+                    startType = 1;
+                if (move2X == -1) //lower end
+                    startType = 5;
+                if (move2X == 1)
+                    startType = 6;
+            }
+            if (move1Y == 1) //lower start
+            {
+                if (move2Y == 1) //upper end
+                    startType = 1;
+                if (move2X == -1) //lower end
+                    startType = 3;
+                if (move2X == 1)
+                    startType = 4;
+            }
+
+            int[,] ints = new int[lines.Length, lines[0].Length];
+            foreach(var p in path)
+            {
+                ints[p.Item2, p.Item1] = 1;
+            }
+                
+            (int, int)[,] pipes = new (int, int)[lines.Length*3, lines[0].Length*3];
+
+            long result = 0;
+
+            List<(int, int)[,]> foos = new();
+
+            //0
+            foos.Add(new (int, int)[3, 3] { { NONE, NONE, NONE},
+                                            { NONE, NONE, NONE},
+                                            { NONE, NONE, NONE}});
+
+            //1 VERT
+            foos.Add(new (int, int)[3, 3] { { NONE, VERT, NONE},
+                                            { NONE, VERT, NONE},
+                                            { NONE, VERT, NONE}});
+
+            //2 HOR
+            foos.Add(new (int, int)[3, 3] { { NONE, NONE, NONE},
+                                            { HOR, HOR, HOR},
+                                            { NONE, NONE, NONE}});
+
+            //3 UR
+            foos.Add(new (int, int)[3, 3] { { NONE, VERT, NONE},
+                                            { NONE, UR, HOR},
+                                            { NONE, NONE, NONE}});
+
+            //4 UL
+            foos.Add(new (int, int)[3, 3] { { NONE, VERT, NONE},
+                                            { HOR, UL, NONE},
+                                            { NONE, NONE, NONE}});
+
+            //5 DL
+            foos.Add(new (int, int)[3, 3] { { NONE, NONE, NONE},
+                                            { HOR, DL, NONE},
+                                            { NONE, VERT, NONE}});
+
+            //6 DR
+            foos.Add(new (int, int)[3, 3] { { NONE, NONE, NONE},
+                                            { NONE, DR, HOR},
+                                            { NONE, VERT, NONE}});            
+            
+            for (int i = 0; i < lines.Count(); i++)
+            {
+                for (int j = 0; j < lines[i].Count(); j++)
+                {
+                    (int X, int Y) p = (j * 3, i * 3);
+
+                    if (ints[i,j] != 1)
+                    {
+                        for (int n = 0; n < 3; n++)
+                            for (int m = 0; m < 3; m++)
+                                pipes[p.Y + n, p.X + m] = foos[0][n, m];
+                    }
+                    else
+                        switch (lines[i][j])
+                        {
+                            case '.':
+                                for (int n = 0; n < 3; n++)
+                                    for (int m = 0; m < 3; m++)
+                                        pipes[p.Y + n, p.X + m] = foos[0][n, m];
+                                break;
+                            case '-':
+                                for (int n = 0; n < 3; n++)
+                                    for (int m = 0; m < 3; m++)
+                                        pipes[p.Y + n, p.X + m] = foos[2][n, m];
+                                break;
+                            case '|':
+                                for (int n = 0; n < 3; n++)
+                                    for (int m = 0; m < 3; m++)
+                                        pipes[p.Y + n, p.X + m] = foos[1][n, m];
+                                break;
+                            case 'L':
+                                for (int n = 0; n < 3; n++)
+                                    for (int m = 0; m < 3; m++)
+                                        pipes[p.Y + n, p.X + m] = foos[3][n, m];
+                                break;
+                            case 'J':
+                                for (int n = 0; n < 3; n++)
+                                    for (int m = 0; m < 3; m++)
+                                        pipes[p.Y + n, p.X + m] = foos[4][n, m];
+                                break;
+                            case '7':
+                                for (int n = 0; n < 3; n++)
+                                    for (int m = 0; m < 3; m++)
+                                        pipes[p.Y + n, p.X + m] = foos[5][n, m];
+                                break;
+                            case 'F':
+                                for (int n = 0; n < 3; n++)
+                                    for (int m = 0; m < 3; m++)
+                                        pipes[p.Y + n, p.X + m] = foos[6][n, m];
+                                break;
+                            case 'S':
+                                for (int n = 0; n < 3; n++)
+                                    for (int m = 0; m < 3; m++)
+                                        pipes[p.Y + n, p.X + m] = foos[startType][n, m];
+                                break;
+                        }
+                }
+            }
 
 
-            //Solve
-            long result = Utils.GaussSum(10, 5);
+            pipes = FloodFill(pipes, (0, 0), NONE, (9, 9));
+            
+            for (int i = 0; i <= pipes.GetUpperBound(0); i += 3)
+            {
+                for (int j = 0; j <= pipes.GetUpperBound(1); j += 3)
+                {
+                    if (pipes[i + 1, j + 1] == NONE) result++;
+                }
+            }
+            return (result);
+        }
+        
+        private (int,int)[,] FloodFill((int, int)[,] map, (int,int) start, (int,int) col, (int,int) paint)
+        {
+            Stack<(int, int)> pixels = new Stack<(int, int)>();
+            pixels.Push(start);
+            (int, int)[,] result = map;
+            
+            while (pixels.Count > 0)
+            {
+                (int X, int Y) a = pixels.Pop();
+                if (a.X <= map.GetUpperBound(1) && a.X >= 0 &&
+                        a.Y <= map.GetUpperBound(0) && a.Y >= 0)
+                {
+                    
+                    if (result[a.Y, a.X] == col)
+                    {
+                        result[a.Y, a.X] = paint;
+                        pixels.Push((a.X - 1, a.Y));
+                        pixels.Push((a.X + 1, a.Y));
+                        pixels.Push((a.X, a.Y - 1));
+                        pixels.Push((a.X, a.Y + 1));
+                    }
+                }
+            }
             return result;
         }
     }
