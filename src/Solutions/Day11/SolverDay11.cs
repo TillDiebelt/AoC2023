@@ -34,7 +34,7 @@ namespace Solutions.Day11
 {
     public class SolverDay11 : ISolver
     {
-        public long SolvePart1(string[] lines)
+        public long SolvePart1(string[] lines, string text)
         {
             int[,] gal = new int[lines.Length, lines[0].Length];
             List<(int x, int y)> gals = new();
@@ -98,7 +98,7 @@ namespace Solutions.Day11
             return result;
         }
 
-        public long SolvePart2(string[] lines)
+        public long SolvePart2(string[] lines, string text)
         {            
             int[,] gal = new int[lines.Length, lines[0].Length];
             List<(int x, int y)> gals = new();

@@ -21,7 +21,7 @@ namespace Solutions.Day07
 {
     public class SolverDay07 : ISolver
     {
-        public long SolvePart1(string[] lines)
+        public long SolvePart1(string[] lines, string text)
         {
             long result = lines
                 .Select(l => (
@@ -85,7 +85,7 @@ namespace Solutions.Day07
             }
         }
 
-        public long SolvePart2(string[] lines)
+        public long SolvePart2(string[] lines, string text)
         {
             long result = 0;
             List<JHand> hands = new List<JHand>();

@@ -34,7 +34,7 @@ namespace Solutions.Day12
 {
     public class SolverDay12 : ISolver
     {
-        public long SolvePart1(string[] lines)
+        public long SolvePart1(string[] lines, string text)
         {
             List<(string s, List<int> arrangement)> springs = new();
             for(int i = 0; i < lines.Length; i++)
@@ -42,11 +42,16 @@ namespace Solutions.Day12
                 var splits = lines[i].Split(" ");
                 string sp = splits[0].Trim();
                 var arr = splits[1].Trim().Split(",").Select(x => Int32.Parse(x)).ToList();
-                springs.Add((sp, arr));
+                springs.Add((sp+".", arr));
             }
 
 
             long result = 0;
+            for (int i = 0; i < springs.Count; i++)
+            {
+                Console.WriteLine(i + ": " + Possibilities(springs[i].s, springs[i].arrangement));
+            }
+            /*
             //Bruteforce yeah, part 2 wont punish that D:
             for (int i = 0; i < springs.Count; i++)
             {
@@ -65,7 +70,7 @@ namespace Solutions.Day12
                     if(sa)
                         result++;
                 }
-            }
+            }*/
 
             return result;
         }
@@ -123,7 +128,7 @@ namespace Solutions.Day12
             return res;
         }
 
-        public long SolvePart2(string[] lines)
+        public long SolvePart2(string[] lines, string text)
         {
             List<(string s, List<int> arrangement)> springs = new();
 
@@ -150,7 +155,7 @@ namespace Solutions.Day12
             long result = 0;
             for (int i = 0; i < springs.Count; i++)
             {
-                result += Possibilities(springs[i].s, springs[i].arrangement);
+                Console.WriteLine(i + ": " + Possibilities(springs[i].s, springs[i].arrangement));
             }
 
             //Solve
@@ -174,7 +179,7 @@ namespace Solutions.Day12
             int offset = 0;
             int cnt = springs[0];
             long pos = 0;
-            while ((cur.Length-offset) >= (springs.Sum() + springs.Count - 1)) //super duper fast //offset + cnt < cur.Length && 
+            while ((cur.Length-offset) >= (springs.Sum() + springs.Count - 1)) //super duper fast
             {
                 bool t = true;
                 for (int i = 0; i < cnt; i++)

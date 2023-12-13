@@ -9,6 +9,12 @@ using Solutions.Day02;
 using Solutions.Day03;
 using Solutions.Day04;
 using Solutions.Day05;
+using Solutions.Day09;
+using Solutions.Day10;
+using Solutions.Day11;
+using Solutions.Day12;
+using Solutions.Day13;
+using Solutions.Day14;
 
 namespace Solutions
 {
@@ -39,8 +45,8 @@ namespace Solutions
     
     class Program
     {
-        public static int day = 5;
-        public static ISolver solver = new SolverDay05();
+        public static int day = 13;
+        public static ISolver solver = new SolverDay13();
         public static string inputPath = "../../../input/inputDay"+day;
         public static string inputPathTest = "../../../input/inputTest";
         
@@ -51,22 +57,21 @@ namespace Solutions
             
             Console.WriteLine("AOC 2023 Day " + day);
             Console.WriteLine("Solution Part 1:");
-            Console.WriteLine(solver.SolvePart1(lines));
+            Console.WriteLine(solver.SolvePart1(lines, input));
             Console.WriteLine("Solution Part 2:");
-            Console.WriteLine(solver.SolvePart2(lines));
+            Console.WriteLine(solver.SolvePart2(lines, input));
 
-
-
+            
             input = File.ReadAllText(inputPathTest).Replace("\r", "");
             lines = input.Split('\n', StringSplitOptions.RemoveEmptyEntries);            
             Console.WriteLine("\nTests:");
-            var test1 = solver.SolvePart1(lines);
+            var test1 = solver.SolvePart1(lines, input);
             Console.WriteLine(test1);
             if (test1 == 8) Console.WriteLine("test 1 successful"); else Console.WriteLine("test 1 failed");
-            var test2 = solver.SolvePart2(lines);
+            var test2 = solver.SolvePart2(lines, input);
             Console.WriteLine(test2);
             if (test2 == 2286) Console.WriteLine("test 2 successful"); else Console.WriteLine("test 2 failed");
-
+            
             //Benchmark
             //Console.WriteLine("\nBenchmark:");
             //BenchmarkRunner.Run<Benchmark>();

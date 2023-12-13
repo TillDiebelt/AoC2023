@@ -20,7 +20,7 @@ namespace Solutions.Day08
 {
     public class SolverDay08 : ISolver
     {
-        public long SolvePart1(string[] lines)
+        public long SolvePart1(string[] lines, string text)
         {
             long result = 0;
             Dictionary<string,(string,string)> rules = new Dictionary<string, (string, string)>();
@@ -53,7 +53,7 @@ namespace Solutions.Day08
             return result;
         }
 
-        public long SolvePart2(string[] lines)
+        public long SolvePart2(string[] lines, string text)
         {
             long result = 1;
             Dictionary<string, (string, string)> rules = new Dictionary<string, (string, string)>();

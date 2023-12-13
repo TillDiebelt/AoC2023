@@ -30,9 +30,9 @@ using System.Text.RegularExpressions;
 using Microsoft.Diagnostics.Runtime.DacInterface;
 using AOCLib;
 
-namespace Solutions.Day00
+namespace Solutions.Day14
 {
-    public class SolverDay00 : ISolver
+    public class SolverDay14 : ISolver
     {
         public long SolvePart1(string[] lines, string text)
         {
@@ -44,13 +44,24 @@ namespace Solutions.Day00
             //1,3,5,1,2,455,6
             //var longs = lines[0].Split(',', StringSplitOptions.RemoveEmptyEntries).Select(x => Convert.ToInt64(x));
 
-            //1
-            //3
-            var sum = lines.Select(y => Convert.ToInt64(y)).Map(x => x).Reduce((x, y) => x + y);
+            List<long> longs = new();
+            for(int i = 0; i < lines.Length; i++)
+            {
+                //var splits = lines[i].Split(":")[1].Trim().Split(",").Select(x => Int64.Parse(x)).ToList();
+                for (int j = 0; j < lines[i].Length; j++)
+                {
+                    
+                }
+            }
+
+            for (int i = 0; i < longs.Count; i++)
+            {
+
+            }
 
 
             //Solve
-            long result = sum;
+            long result = 0;
             return result;
         }
 

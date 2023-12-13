@@ -29,12 +29,13 @@ using TillSharp.Base;
 using System.Text.RegularExpressions;
 using Microsoft.Diagnostics.Runtime.DacInterface;
 using AOCLib;
+using GIGACHADINT = System.Numerics.BigInteger;
 
 namespace Solutions.Day09
 {
     public class SolverDay09 : ISolver
     {
-        public long SolvePart1(string[] lines)
+        public long SolvePart1(string[] lines, string text)
         {
             List<List<long>> seq = new List<List<long>>();
             
@@ -73,7 +74,7 @@ namespace Solutions.Day09
             return result;
         }
 
-        public long SolvePart2(string[] lines)
+        public long SolvePart2(string[] lines, string text)
         {
             List<List<long>> seq = new List<List<long>>();
 

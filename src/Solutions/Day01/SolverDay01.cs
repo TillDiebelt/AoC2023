@@ -37,7 +37,7 @@ namespace Solutions.Day01
 {
     public class SolverDay01 : ISolver
     {
-        public long SolvePart1(string[] lines)
+        public long SolvePart1(string[] lines, string text)
         {
             //Solve
             long result = 0;
@@ -66,7 +66,7 @@ namespace Solutions.Day01
             return result;
         }
 
-        public long SolvePart2(string[] lines)
+        public long SolvePart2(string[] lines, string text)
         {
             //Solve
             long result = 0;

@@ -53,7 +53,7 @@ namespace Solutions.Day10
         public (int, int) NONE = (-1,-1);
 
 
-        public long SolvePart1(string[] lines)
+        public long SolvePart1(string[] lines, string text)
         {
             (int,int)[,] pipes = new (int, int)[lines.Length, lines[0].Length];
             (int, int) start = (0,0);
@@ -175,7 +175,7 @@ namespace Solutions.Day10
             return false;
         }
 
-        public long SolvePart2(string[] lines)
+        public long SolvePart2(string[] lines, string text)
         {
 
             (int, int)[,] pipesP1 = new (int, int)[lines.Length, lines[0].Length];

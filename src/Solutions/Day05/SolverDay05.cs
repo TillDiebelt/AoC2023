@@ -22,7 +22,7 @@ namespace Solutions.Day05
 {
     public class SolverDay05 : ISolver
     {
-        public long SolvePart1(string[] lines)
+        public long SolvePart1(string[] lines, string text)
         {
             //parse
             var lows = lines[0].Split(':')[1].Split(" ",StringSplitOptions.RemoveEmptyEntries).Select(y => Convert.ToInt64(y)).ToList();
@@ -142,7 +142,7 @@ namespace Solutions.Day05
             return (overlapStart, overlapEnd- overlapStart+1);
         }
 
-        public long SolvePart2(string[] lines)
+        public long SolvePart2(string[] lines, string text)
         {
             //parse
             var seeds = lines[0].Split(':')[1].Split(" ", StringSplitOptions.RemoveEmptyEntries).Select(y => Convert.ToInt64(y)).ToList();

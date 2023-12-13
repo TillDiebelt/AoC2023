@@ -33,16 +33,18 @@ namespace AOCLib
             var queue = new PriorityQueue<((int, int), (int, int), int), int>();
             (int, int) back = current;
             queue.Enqueue((current, current, 0), 0);
+            int step = 0;
             while (queue.Count > 0)
             {
                 ((int, int) cur, (int, int) prev, int c) todo = queue.Dequeue();
                 current = todo.cur;
-                if (current == Goal)
+                if (current == Goal && step > 0)
                 {
                     walk.Add(current, todo.prev);
                     back = current;
                     break;
                 }
+                step++;
                 if (cost.ContainsKey(current))
                 {
                     if (cost[current] <= todo.c)

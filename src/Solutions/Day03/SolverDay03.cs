@@ -34,7 +34,7 @@ namespace Solutions.Day03
 {
     public class SolverDay03 : ISolver
     {
-        public long SolvePart1(string[] lines)
+        public long SolvePart1(string[] lines, string text)
         {
             var needParse = new bool[lines.Length, lines[0].Length];
             for(int i = 0; i < lines.Length; i++)
@@ -78,7 +78,7 @@ namespace Solutions.Day03
             return result;
         }
 
-        public long SolvePart2(string[] lines)
+        public long SolvePart2(string[] lines, string text)
         {
             //Solve
             int uni = 1;

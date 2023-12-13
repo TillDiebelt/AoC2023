@@ -34,7 +34,7 @@ namespace Solutions.Day04
 {
     public class SolverDay04 : ISolver
     {
-        public long SolvePart1(string[] lines)
+        public long SolvePart1(string[] lines, string text)
         {
             long result = 0;
             for (int i = 0; i < lines.Length; i++)
@@ -51,7 +51,7 @@ namespace Solutions.Day04
             return result;
         }
 
-        public long SolvePart2(string[] lines)
+        public long SolvePart2(string[] lines, string text)
         {
             long result = 0;
             Dictionary<int, int> count = new Dictionary<int, int>();
