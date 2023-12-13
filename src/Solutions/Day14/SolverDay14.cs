@@ -77,7 +77,7 @@ namespace Solutions.Day14
 
             //1
             //3
-            var sum = lines.Select(y => Convert.ToInt64(y)).Map(x => x).Reduce((x, y) => x + y);
+            //var sum = lines.Select(y => Convert.ToInt64(y)).Map(x => x).Reduce((x, y) => x + y);
 
 
             //Solve

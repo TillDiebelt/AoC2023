@@ -139,97 +139,44 @@ namespace Solutions.Day13
                 parse.Add(cur);
             }
 
-            List<(int, int)> rp1 = new();
+            
+            long result = 0;
             foreach (var m in parse)
             {
                 for (int i = 1; i <= m.GetUpperBound(0); i++)
                 {
-                    if (IsHorCopy(m, i - 1, i))
+                    int c = Math.Min(i - 1, m.GetUpperBound(0) - i);
+                    int sum = 0;
+                    for(int j = 0; j <= c; j++)
                     {
-                        int c = Math.Min(i - 1, m.GetUpperBound(0) - i);
-                        bool all = true;
-                        for (int j = 1; j <= c; j++)
+                        for (int x = 0; x <= m.GetUpperBound(1); x++)
                         {
-                            all &= IsHorCopy(m, i + j, i - j - 1);
+                            sum += m[i+j, x] ^ m[i-j-1, x];
                         }
-                        if (all)
-                        {
-                            rp1.Add((0, i));
-                            break;
-                        }
+                    }
+                    if(sum == 1)
+                    {
+                        result += i * 100;
+                        break;
                     }
                 }
                 for (int i = 1; i <= m.GetUpperBound(1); i++)
                 {
-                    if (IsVertCopy(m, i - 1, i))
+                    int c = Math.Min(i - 1, m.GetUpperBound(1) - i);
+                    int sum = 0;
+                    for (int j = 0; j <= c; j++)
                     {
-                        int c = Math.Min(i - 1, m.GetUpperBound(1) - i);
-                        bool all = true;
-                        for (int j = 1; j <= c; j++)
+                        for (int y = 0; y <= m.GetUpperBound(0); y++)
                         {
-                            all &= IsVertCopy(m, i + j, i - j - 1);
-                        }
-                        if (all)
-                        {
-                            rp1.Add((1, i));
-                            break;
+                            sum += m[y,i + j] ^ m[y,i - j - 1];
                         }
                     }
-                }
-            }
-
-            long result = 0;
-            int curP1 = 0;
-            foreach (var m in parse)
-            {
-                var curRef = rp1[curP1];
-                curP1++;
-                for (int y = 0; y <= m.GetUpperBound(0); y++)
-                {
-                    for (int x = 0; x <= m.GetUpperBound(1); x++)
+                    if (sum == 1)
                     {
-                        m[y, x] = (m[y, x] + 1) % 2;
-
-                        for (int i = 1; i <= m.GetUpperBound(0); i++)
-                        {
-                            if (IsHorCopy(m, i - 1, i))
-                            {
-                                int c = Math.Min(i - 1, m.GetUpperBound(0) - i);
-                                bool all = true;
-                                for (int j = 1; j <= c; j++)
-                                {
-                                    all &= IsHorCopy(m, i + j, i - j - 1);
-                                }
-                                if (all && (curRef.Item1 != 0 || curRef.Item2 != i))
-                                {
-                                    result += i * 100;
-                                    goto a;
-                                }
-                            }
-                        }
-                        for (int i = 1; i <= m.GetUpperBound(1); i++)
-                        {
-                            if (IsVertCopy(m, i - 1, i))
-                            {
-                                int c = Math.Min(i - 1, m.GetUpperBound(1) - i);
-                                bool all = true;
-                                for (int j = 1; j <= c; j++)
-                                {
-                                    all &= IsVertCopy(m, i + j, i - j - 1);
-                                }
-                                if (all && (curRef.Item1 != 1 || curRef.Item2 != i))
-                                {
-                                    result += i;
-                                    goto a;
-                                }
-                            }
-                        }
-
-                        m[y, x] = (m[y, x] + 1) % 2;
+                        result += i;
+                        break;
                     }
                 }
-                a:
-                    ;
             }
 
             return result;
