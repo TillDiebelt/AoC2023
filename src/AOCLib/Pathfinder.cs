@@ -8,78 +8,63 @@ using System.Threading.Tasks;
 
 namespace AOCLib
 {
-    public class Pathfinder<T>
-    {
-        public T[,] Map;
-        public (int y, int x) Start = (0, 0);
-        public (int y, int x) Goal = (0, 0);
-        public Func<(int, int), (int, int), int> Distance = (a, b) => Math.Abs(a.Item1 - b.Item1) + Math.Abs(a.Item2 - b.Item2);
-        public Func<T[,], (int, int), (int, int), int> StepCost = (x, a, b) => 1;
-        public Func<T[,], (int, int), IEnumerable<(int, int)>> Neighbours;
-        public Func<T, T, bool> Filter = (a, b) => true;
-
-        public Pathfinder(T[,] map)
+    public static class Pathfinder<T,S>
+    {        
+        public static List<S> FindPath(
+            T Map,
+            Func<T, IEnumerable<S>> GetStarts,
+            Func<T, S, bool> IsGoal,
+            Func<T, S, double> Distance,
+            Func<T, S, S, double> StepCost,
+            Func<T, S, IEnumerable<S>> GetSuccessors
+            )
         {
-            this.Map = map;
-        }
-        
-        public List<(int, int)> FindPath((int, int) start, (int, int) end)
-        {
-            Start = start;
-            Goal = end;
-            (int x, int y) current = start;
-            Dictionary<(int, int), (int, int)> walk = new Dictionary<(int, int), (int, int)>();
-            Dictionary<(int, int), int> cost = new Dictionary<(int, int), int>();
-            var queue = new PriorityQueue<((int, int), (int, int), int), int>();
-            (int, int) back = current;
-            queue.Enqueue((current, current, 0), 0);
-            int step = 0;
+            Dictionary<S,S> walk = new Dictionary<S,S>();
+            Dictionary<S, double> cost = new Dictionary<S, double>();
+            var Starts = GetStarts(Map).ToList();
+            if (Starts.Count == 0) throw new Exception("no start found");
+            var queue = new PriorityQueue<S, double>();
+            foreach(var start in Starts)
+            {
+                queue.Enqueue(start, 0);
+                cost[start] = 0;
+            }
+            S current = Starts[0];
             while (queue.Count > 0)
             {
-                ((int, int) cur, (int, int) prev, int c) todo = queue.Dequeue();
-                current = todo.cur;
-                if (current == Goal && step > 0)
+                current = queue.Dequeue();
+                double currentCost = cost[current];
+                if (IsGoal(Map, current))
                 {
-                    walk.Add(current, todo.prev);
-                    back = current;
                     break;
                 }
-                step++;
-                if (cost.ContainsKey(current))
+                IEnumerable<S> successors;
+                successors = GetSuccessors(Map, current);
+                foreach (var successor in successors)
                 {
-                    if (cost[current] <= todo.c)
-                        continue;
+                    double moveCost = cost[current] + StepCost(Map, current, successor);
+                    if (cost.ContainsKey(successor))
+                    {
+                        if (cost[successor] <= moveCost)
+                            continue;
+                        else
+                        {
+                            walk[successor] = current;
+                            cost[successor] = moveCost;
+                        }
+                    }
                     else
                     {
-                        walk[(current)] = todo.prev;
-                        cost[current] = todo.c;
+                        walk.Add(successor, current);
+                        cost.Add(successor, moveCost);
                     }
-                }
-                else
-                {
-                    walk.Add(current, todo.prev);
-                    cost.Add(current, todo.c);
-                }
-                IEnumerable<(int x, int y)> neighbours;
-                if (Neighbours == null)
-                    neighbours = Map.Neighbours(current.x, current.y);
-                else
-                    neighbours = Neighbours(Map, current);
-                neighbours = neighbours.Where(x => Filter(Map[current.y, current.x], Map[x.y, x.x])).ToList();
-                foreach (var neighbour in neighbours)
-                {
-                    if (cost.ContainsKey(neighbour))
-                    {
-                        if (cost[neighbour] <= todo.c + StepCost(Map, current, neighbour))
-                            continue;
-                    }
-                    queue.Enqueue((neighbour, current, todo.c + StepCost(Map, current, neighbour)), todo.c + Distance(neighbour, Goal));
+                    queue.Enqueue(successor, moveCost + Distance(Map, successor));
                 }
             }
-            if (current != Goal) return new List<(int, int)>();
+            if (!IsGoal(Map, current)) throw new Exception("no path found");
 
-            var path = new List<(int, int)>();
-            while (current != Start)
+            var path = new List<S>();
+            while (!Starts.Contains(current))
             {
                 path.Add(current);
                 current = walk[current];
