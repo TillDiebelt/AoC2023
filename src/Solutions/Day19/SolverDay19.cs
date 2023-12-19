@@ -29,9 +29,6 @@ using TillSharp.Base;
 using System.Text.RegularExpressions;
 using Microsoft.Diagnostics.Runtime.DacInterface;
 using AOCLib;
-using BenchmarkDotNet.Validators;
-using System.Xml.Schema;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Solutions.Day19
 {
@@ -57,10 +54,10 @@ namespace Solutions.Day19
             }
 
             List<Part> acc = new List<Part>();
-            foreach(var p in parts)
+            foreach (var p in parts)
             {
                 string cur = "in";
-                while(cur != "A" && cur != "R")
+                while (cur != "A" && cur != "R")
                 {
                     Rule r = rules.Where(x => x.id == cur).First();
                     cur = r.apply(p);
@@ -92,7 +89,7 @@ namespace Solutions.Day19
 
             public long get(char id)
             {
-                switch(id)
+                switch (id)
                 {
                     case 'x': return x;
                     case 'm': return m;
@@ -112,7 +109,7 @@ namespace Solutions.Day19
                 this.id = id;
                 rules = new List<Func<Part, string>>();
                 var splits = parse.Split(",");
-                foreach(var s in splits)
+                foreach (var s in splits)
                 {
                     if (s.Length == 1)
                         rules.Add((a) => { return s; });
@@ -137,17 +134,17 @@ namespace Solutions.Day19
                     }
                 }
             }
-            
+
             public string apply(Part p)
             {
-                foreach(var r in rules)
+                foreach (var r in rules)
                 {
                     if (r(p) != "") return r(p);
                 }
                 return "";
             }
         }
-        
+
         public long SolvePart2(string[] lines, string text)
         {
             List<AbstractRule> rules = new List<AbstractRule>();
@@ -167,125 +164,62 @@ namespace Solutions.Day19
             foreach (var r in rules)
             {
                 List<string> goesTo = new List<string>();
-                foreach(var t in r.to)
+                foreach (var t in r.to)
                 {
                     goesTo.Add((t.Item2));
                 }
                 graph.Add((r.id, goesTo));
             }
-            
-            List<(string, List<int>)> useful = new List<(string, List<int>)>();
-            for (int rep = 0; rep < rules.Count; rep++)
-            {
-                int c = 0;
-                foreach (var g in graph.Where(x => !useful.Any( y => y.Item1 == x.key)))
-                {
-                    List<int> paths = new List<int>();
-                    for (int i = 0; i < g.tos.Count; i++)
-                    {
-                        if (g.tos[i] == "A") 
-                            paths.Add(i);
-                        else if (useful.Any( x => x.Item1 == g.tos[i])) 
-                            paths.Add(i);
-                    }
-                    if (paths.Count > 0)
-                    {
-                        useful.Add((g.key, paths));
-                        c++;
-                    }
-                }
-                foreach (var g in graph.Where(x => useful.Any(y => y.Item1 == x.key)))
-                {
-                    for (int i = 0; i < g.tos.Count; i++)
-                    {
-                        if (useful.Any(x => x.Item1 == g.tos[i]))
-                        {
-                            if (!useful.Where(x => g.key == x.Item1).First().Item2.Contains(i))
-                            {
-                                c++;
-                                useful.Where(x => g.key == x.Item1).First().Item2.Add(i);
-                            }
-                        }
-                    }
-                }
-                if (c == 0) break;
-            }
 
             List<Condition> valids = new List<Condition>();
-            /*
-            var start = useful.Where(x => x.Item1 == "in").First();
-            foreach (var p in start.Item2)
-            {
-                Condition newC = rules.Where(x => x.id == "in").First().to[p].Item1;
-                valids.AddRange(Search(
-                        rules.Where(x => x.id == "in").First().to[p].Item2,
-                        newC,
-                        p,
-                        useful,
-                        rules
-                    )
-                );
-            }            */
             valids = Search2("in", new Condition(""), graph, rules);
 
             //Solve
-
             long result = 0;
+            List<Condition> seen = new List<Condition>();
             foreach (var v in valids)
             {
-                result += v.combs();
+                List<Condition> merged = new List<Condition>();
+                foreach (var c in seen)
+                {
+                    var foo = v.merge(c);
+                    if (foo.combs() > 0)
+                    {
+                        foo.mul = -(c.mul * v.mul);
+                        merged.Add(foo);
+                    }
+                }
+                seen.Add(v);
+                seen.AddRange(merged);
             }
 
+            foreach (var v in seen)
+            {
+                result += v.combs() * v.mul;
+            }
             return result;
-            //167409079868000
-            //496534091000000
         }
 
-        private List<Condition> Search(string key, Condition current, int path, List<(string id, List<int> paths)> useful, List<AbstractRule> rules)
-        {
-            List<Condition> valids = new List<Condition>();
-
-            Condition newC = current.merge(rules.Where(x => x.id == key).First().to[path].Item1);
-            if (newC.combs() == 0) return valids;
-
-            string nextKey = rules.Where(x => x.id == key).First().to[path].Item2;
-            if (nextKey == "A")
-            {
-                valids.Add(newC);
-                return valids;
-            }
-            var next = useful.Where(x => x.id == nextKey).First();
-            foreach (var p in next.paths)
-            {
-                valids.AddRange(Search(
-                        next.id,
-                        newC,
-                        p,
-                        useful,
-                        rules
-                    )
-                );
-            }
-            return valids;
-        }
-        
         private List<Condition> Search2(string key, Condition current, List<(string id, List<string> paths)> graph, List<AbstractRule> rules)
         {
             List<Condition> valids = new List<Condition>();
 
-            foreach(var path in rules.Where(x => x.id == key).First().to)
+            Condition addMerge = current;
+            foreach (var path in rules.Where(x => x.id == key).First().to)
             {
-                Condition newC = current.merge(path.Item1);
+                Condition newC = addMerge.merge(path.Item1);
                 if (newC.combs() == 0) continue;
 
                 string nextKey = path.Item2;
                 if (nextKey == "A")
                 {
                     valids.Add(newC);
+                    addMerge = addMerge.inv_merge(newC);
                     continue;
                 }
                 if (nextKey == "R")
                 {
+                    addMerge = addMerge.inv_merge(newC);
                     continue;
                 }
                 valids.AddRange(Search2(
@@ -295,6 +229,7 @@ namespace Solutions.Day19
                         rules
                     )
                 );
+                addMerge = addMerge.inv_merge(newC);
             }
             return valids;
         }
@@ -303,31 +238,33 @@ namespace Solutions.Day19
         {
             public string c;
 
-            long minx = 0;
-            long maxx = 4001;
-            long mina = 0;
-            long maxa = 4001;
-            long minm = 0;
-            long maxm = 4001;
-            long mins = 0;
-            long maxs = 4001;
-            
+            public long minx = 0;
+            public long maxx = 4001;
+            public long mina = 0;
+            public long maxa = 4001;
+            public long minm = 0;
+            public long maxm = 4001;
+            public long mins = 0;
+            public long maxs = 4001;
+
+            public long mul = 1;
+
             public long combs()
             {
-                return Math.Max(0, maxx - minx - 1)
-                    * Math.Max(0, maxa - mina - 1)
-                    * Math.Max(0, maxs - mins - 1)
-                    * Math.Max(0, maxm - minm - 1);
+                return Math.Max(0, maxx - minx-1)
+                    * Math.Max(0, maxa - mina-1)
+                    * Math.Max(0, maxs - mins-1)
+                    * Math.Max(0, maxm - minm-1);
             }
-            
+
             public Condition(string parse)
             {
                 c = parse;
-                if(parse.Length > 0)
+                if (parse.Length > 0)
                 {
                     if (parse.Split("<").Length == 0 || parse.Split(">").Length == 0)
                         return;
-                    switch(parse[0])
+                    switch (parse[0])
                     {
                         case 'x':
                             if (parse[1] == '<')
@@ -358,7 +295,7 @@ namespace Solutions.Day19
                     }
                 }
             }
-            
+
             public Condition merge(Condition a)
             {
                 Condition newC = new("");
@@ -372,6 +309,73 @@ namespace Solutions.Day19
                 newC.maxs = Math.Min(this.maxs, a.maxs);
                 return newC;
             }
+
+            public Condition inv_merge(Condition a)
+            {
+                Condition newC = new("");
+                newC.minx = Math.Max(this.minx, a.minx);
+                newC.maxx = Math.Min(this.maxx, a.maxx);
+                newC.mina = Math.Max(this.mina, a.mina);
+                newC.maxa = Math.Min(this.maxa, a.maxa);
+                newC.minm = Math.Max(this.minm, a.minm);
+                newC.maxm = Math.Min(this.maxm, a.maxm);
+                newC.mins = Math.Max(this.mins, a.mins);
+                newC.maxs = Math.Min(this.maxs, a.maxs);
+
+                int offset = 1;
+                if (this.maxa == a.maxa);
+                else
+                {
+                    newC.mina = Math.Min(a.maxa, this.maxa) - offset;
+                    newC.maxa = Math.Max(a.maxa, this.maxa);
+                }
+                if (this.mina == a.mina);
+                else
+                {
+                    newC.mina = Math.Min(a.mina, this.mina);
+                    newC.maxa = Math.Max(a.mina, this.mina) + offset;
+                }
+
+                if (this.maxx == a.maxx) ;
+                else
+                {
+                    newC.minx = Math.Min(a.maxx, this.maxx) - offset;
+                    newC.maxx = Math.Max(a.maxx, this.maxx);
+                }
+                if (this.minx == a.minx) ;
+                else
+                {
+                    newC.minx = Math.Min(a.minx, this.minx);
+                    newC.maxx = Math.Max(a.minx, this.minx) + offset;
+                }
+
+                if (this.maxs == a.maxs);
+                else
+                {
+                    newC.mins = Math.Min(a.maxs, this.maxs) - offset;
+                    newC.maxs = Math.Max(a.maxs, this.maxs);
+                }
+                if (this.mins == a.mins) ;
+                else
+                {
+                    newC.mins = Math.Min(a.mins, this.mins);
+                    newC.maxs = Math.Max(a.mins, this.mins) + offset;
+                }
+
+                if (this.maxm == a.maxm) ;
+                else
+                {
+                    newC.minm = Math.Min(a.maxm, this.maxm) - offset;
+                    newC.maxm = Math.Max(a.maxm, this.maxm);
+                }
+                if (this.minm == a.minm) ;
+                else
+                {
+                    newC.minm = Math.Min(a.minm, this.minm);
+                    newC.maxm = Math.Max(a.minm, this.minm) + offset;
+                }
+                return newC;
+            }
         }
 
         public class AbstractRule
@@ -379,7 +383,7 @@ namespace Solutions.Day19
             public string id;
             List<Func<Part, string>> rules;
             public List<(Condition, string)> to;
-            
+
             public AbstractRule(string id, string parse)
             {
                 this.id = id;
